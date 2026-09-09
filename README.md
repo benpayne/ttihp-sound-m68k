@@ -1,8 +1,12 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# Tiny Tapeout Verilog Project Template
+# 68k Sound Chip (TinyTapeout IHP 26b)
 
-- [Read the documentation for project](docs/info.md)
+A PSG (programmable sound generator) for a 68k-based retrocomputer, targeting the Tiny Tapeout ihp-26b shuttle (IHP SG13G2, 130nm BiCMOS). Exposes itself as a memory-mapped 68k peripheral and drives three simultaneous audio outputs — PWM, I2S, and S/PDIF.
+
+**Start here:** [CLAUDE.md](CLAUDE.md) for project context, then [docs/design/sound-chip.md](docs/design/sound-chip.md) and [docs/design/68k-bus-interface.md](docs/design/68k-bus-interface.md) for the full spec. Nothing has been implemented yet — `src/project.v` is currently a placeholder.
+
+Sibling project: [ttihp-spi-m68k](https://github.com/benpayne/ttihp-spi-m68k) (SPI bridge, same 68k bus interface). Prior art: [ttihp-ps2-m68k](https://github.com/benpayne/ttihp-ps2-m68k) (PS/2 decoder, same retrocomputer, same shuttle).
 
 ## What is Tiny Tapeout?
 
