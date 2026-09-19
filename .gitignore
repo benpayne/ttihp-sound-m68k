@@ -11,3 +11,24 @@ test/sim_build
 test/__pycache__/
 test/results.xml
 test/gate_level_netlist.v
+test/venv/
+
+# Python + coverage artifacts (added by /speckit-implement)
+*.pyc
+__pycache__/
+test/bus68k_if/sim_build
+coverage.dat
+coverage.yml
+coverage.xml
+coverage.info
+coverage_annotated/
+
+# cocotb JUnit results. Every concurrent agent/shell writes its own
+# COCOTB_RESULTS_FILE (results_lead*, results_gaps*, results_audit*,
+# results_cvp*, ...); all are per-run artifacts, none belong in the repo.
+test/results*.xml
+test/bus68k_if/results*.xml
+
+# cocotb-coverage database exports. Generated, not config -- written by
+# coverage_db.export_to_yaml() in test_bus.py, test_tone_pwm.py, test_i2s.py.
+test/coverage_*.yml

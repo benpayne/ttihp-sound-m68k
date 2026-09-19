@@ -1,0 +1,18 @@
+# yosys script template for a synthesis-based area estimate against the IHP
+# SG13G2 typical-corner standard-cell liberty.
+#
+# This file is a TEMPLATE, not run directly: `make area` in test/Makefile
+# renders @@SOURCES@@ / @@TOP@@ / @@LIBERTY@@ below (via sed) into
+# sim_build/area.ys.gen and runs that with `yosys -s`. Keep this in sync with
+# PROJECT_SOURCES in test/Makefile as source files are added.
+#
+# Reference points (research R11 / sibling ttihp-ps2-m68k):
+#   sibling ps2 chip measured 12,620 um^2 and fits a 1x1 tile (31,318 um^2).
+#   Budget: <=17,500 um^2 proceed | 17,500-21,000 raise density | >21,000 cut S/PDIF.
+
+read_verilog -sv @@SOURCES@@
+synth -flatten -top @@TOP@@
+dfflibmap -liberty @@LIBERTY@@
+abc -liberty @@LIBERTY@@
+opt_clean
+stat -liberty @@LIBERTY@@

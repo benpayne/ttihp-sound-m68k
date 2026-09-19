@@ -1,0 +1,14 @@
+# yosys script template proving FPGA portability (constitution Principle III)
+# by synthesizing the same RTL for the iCE40UP5K, the Tiny Tapeout FPGA demo
+# board target.
+#
+# This file is a TEMPLATE, not run directly: `make fpga` in test/Makefile
+# renders @@SOURCES@@ / @@TOP@@ below (via sed) into sim_build/fpga.ys.gen
+# and runs that with `yosys -s`. Keep this in sync with PROJECT_SOURCES in
+# test/Makefile as source files are added.
+
+# -device u selects the iCE40 UltraPlus family (which includes the UP5K used
+# on the TT FPGA demo board) - this yosys build's synth_ice40 only accepts
+# the short family codes (hx | lp | u), not full part numbers.
+read_verilog -sv @@SOURCES@@
+synth_ice40 -top @@TOP@@ -device u

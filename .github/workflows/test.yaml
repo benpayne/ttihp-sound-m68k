@@ -17,11 +17,23 @@ jobs:
       - name: Setup python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: '3.13'
 
       - name: Install Python packages
         shell: bash
         run: pip install -r test/requirements.txt
+
+      # Pure-Python unit tests (no simulator). test/test_volume_curve.py holds
+      # pytest tests over the AMP table (FR-023). `make` cannot run them --
+      # they are pytest tests, not cocotb tests, so cocotb discovers nothing in
+      # that module and still exits 0. Without this step they run nowhere in
+      # CI. Deliberately before the cocotb suite: it takes ~0.02s, so an
+      # AMP-table regression fails in seconds rather than after ~40 minutes.
+      - name: Run pure-Python unit tests
+        shell: bash
+        run: |
+          cd test
+          python -m pytest test_volume_curve.py -v
 
       - name: Run tests
         run: |

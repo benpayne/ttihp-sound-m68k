@@ -1,2 +1,8 @@
 pytest==8.4.2
 cocotb==2.0.1
+cocotb-coverage==2.0
+# Imported directly by test/tbutil/covutil.py. It currently arrives anyway as a
+# dependency of cocotb-coverage, but a direct import deserves a direct pin: if a
+# future cocotb-coverage drops or vendors PyYAML, CI would fail with an
+# ImportError that looks nothing like its cause.
+pyyaml==6.0.3

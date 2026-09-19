@@ -34,4 +34,17 @@ module tb ();
       .rst_n  (rst_n)     // not reset
   );
 
+  // Individual uo_out bits as standalone 1-bit nets.
+  // cocotb 2.0 forbids indexing a packed vector handle (handle.py: "Packed
+  // objects, either arrays or structs, cannot be indexed"), so edge triggers
+  // (RisingEdge/FallingEdge) need a real 1-bit signal. See tbutil/dutbits.py.
+  wire uo_bit0 = uo_out[0];
+  wire uo_bit1 = uo_out[1];
+  wire uo_bit2 = uo_out[2];
+  wire uo_bit3 = uo_out[3];
+  wire uo_bit4 = uo_out[4];
+  wire uo_bit5 = uo_out[5];
+  wire uo_bit6 = uo_out[6];
+  wire uo_bit7 = uo_out[7];
+
 endmodule
