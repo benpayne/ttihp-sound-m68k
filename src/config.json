@@ -13,7 +13,15 @@
 
   "//": "PL_TARGET_DENSITY_PCT - You can increase this if Global Placement fails with error GPL-0302.",
   "//": "Users have reported that values up to 80 worked well for them.",
-  "PL_TARGET_DENSITY_PCT": 75,
+  "//": "Set to 65 (down from the 75 we first tried, itself up from the 60 default).",
+  "//": "Global placement was never the problem -- it succeeded at 80.5% utilization.",
+  "//": "The harden failed in DETAILED placement (DPL-0036) inside ResizerTimingPostCTS,",
+  "//": "after the resizer inserted 320 hold buffers: 7 of those added cells (clkload9,",
+  "//": "fanout98, input2, _1190_) could not be legalized within max_displacement 500/100.",
+  "//": "Raising density would make that worse. Lowering it leaves whitespace for the",
+  "//": "resizer's buffers to land in. Instance area is only 21,216 of 28,941 um^2 core,",
+  "//": "so the binding constraint is buffering headroom, not logic area.",
+  "PL_TARGET_DENSITY_PCT": 65,
 
   "//": "CLOCK_PERIOD - Increase this in case you are getting setup time violations.",
   "//": "The value is in nanoseconds, so 20ns == 50MHz.",
