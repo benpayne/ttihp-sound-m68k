@@ -40,7 +40,7 @@ gate-deferred rows below close at the area/STA/GL gates, not in cocotb.
 | FR-035 | Each output individually disable-able, idle state | test_i2s.py::test_i2s_disable; test_spdif.py::test_spdif_disable; test_channels.py::test_pwm_disable_holds_low (PWM gate covered ONLY here -- no test_pwm_disable exists in test_tone_pwm.py, so this row depends on test_channels being in COCOTB_TEST_MODULES) | passing |
 | FR-040 | Spare pin carries 48kHz heartbeat when clocked and out of reset | test_debug.py::test_heartbeat_runs_without_software, test_heartbeat_independent_of_enables | passing |
 | FR-041 | Second spare pin pulses once per completed register write | test_debug.py::test_wr_strobe_one_pulse_per_write, test_wr_strobe_silent_on_read | passing |
-| FR-050 | Runs from single 24.576MHz clock, standard TT pin allocation | — | unmapped |
+| FR-050 | Runs from single 24.576MHz clock, standard TT pin allocation | `info.yaml` (`clock_hz: 24576000`, pinout) + the TT flow itself; `test_timebase.py` and `test_debug.py` verify every derived cadence *given* that clock (Fs = clk/512 = 48 kHz, ticks clk/128) | by construction |
 | FR-051 | Must fit 1x1 tile; cut S/PDIF first if needed | area gate (make area at release gate) -- not a cocotb test | deferred: area gate |
 | FR-060 | Each user story covered by automated sim tests, behavioral+GL | requires the GL suite (make -B GATES=yes) after a harden | deferred: GL run |
 | SC-001 | 10,000+ randomized bus cycles, zero read errors | test_bus.py::test_randomized_readback (10,000 cycles, zero errors) | passing |
@@ -53,17 +53,42 @@ gate-deferred rows below close at the area/STA/GL gates, not in cocotb.
 | SC-008 | At least one output produces correct tone on first silicon | first-silicon bring-up (quickstart section 5) | deferred: silicon |
 | SC-009 | Design fits allocated area, meets timing with margin | area + STA reports at release gate -- not a cocotb test | deferred: area/timing gate |
 
-36 / 41 passing (0 partial, 4 gate-deferred, 1 unmapped)
+**36 / 41 passing, 4 gate-deferred, 1 by construction — all 41 rows dispositioned, 0 unmapped, 0 partial.**
 
 - **Partial**: none. FR-020 and SC-003 closed once `test_channels.py` passed 4/4 on an
-  independent run of my own (`results_lead44_test_channels.xml`), matching test-gaps'
-  `gaps_channels4` test-for-test.
-- **Dependency**: FR-020, FR-026, FR-035 and SC-003 all cite `test_channels.py`, which is
-  NOT yet in `COCOTB_TEST_MODULES` (still 8 of 12 modules). These rows are only true once
-  the wiring lands — see T056.
-- **Unmapped**: FR-050 (single 24.576 MHz clock, standard TT pin allocation). No test
-  asserts this. `test_timebase.py` hardcodes `CLK_PERIOD_PS = 40690` as a bench constant
-  and `info.yaml` declares `clock_hz: 24576000`, but a declaration is not a test and the
-  pin allocation is checked only by the TT flow itself. Left unmapped deliberately rather
-  than cited to a test that merely has a plausible name.
+  independent run of my own, matching test-gaps' `gaps_channels4` test-for-test.
+- **CI-backed**: FR-020, FR-026, FR-035 and SC-003 all cite `test_channels.py`. As of commit
+  `f494406` it **is** in `COCOTB_TEST_MODULES` (eleven cocotb modules, 51 tests), so these
+  rows are backed by CI rather than only by local runs. FR-023 additionally cites
+  `test_volume_curve.py`, which is pytest and runs in CI as its own step — see finding 1.
+- **By construction**: FR-050 is an environmental constraint, not chip behaviour. `info.yaml`
+  declares `clock_hz: 24576000` and the pin allocation; the TT harness supplies the clock and
+  the flow enforces the pinout. `test_timebase.py`/`test_debug.py` verify every *derived*
+  cadence given that clock. Recorded as satisfied by construction rather than cited to a test
+  that merely has a plausible name — the bench's `CLK_PERIOD_PS = 40690` is a stimulus
+  constant, so pointing FR-050 at it would be circular.
 - **Gate-deferred**: FR-051, FR-060, SC-008, SC-009 — area, GL sim, first silicon, STA.
+  FR-060 and SC-009 close from the `gds` workflow's netlist and STA report (T051/T052).
+
+## Process findings (T056)
+
+Four defects found while closing this feature, each of which made a **green result mean less
+than it appeared to**. Recorded because the failure mode is shared: the signal looked fine.
+
+1. **A whole suite ran nowhere.** `test_volume_curve.py` holds pytest tests, not cocotb tests.
+   Listing it in `COCOTB_TEST_MODULES` made cocotb print `UserWarning: No tests were
+   discovered in module` and exit **0** — green CI, suite never executed. Its four tests were
+   the sole evidence for FR-023. Same shape as the earlier obsolete `test.py` stub that
+   asserted `uo_out == 50`. Fixed with a `make unit` target, `make all-tests`, and a dedicated
+   CI step. *Lesson: a module count that doesn't match the wired list is worth chasing.*
+2. **Coverage artifacts collide across concurrent runs.** The four `coverage_*.yml` paths are
+   relative to the process CWD, so `SIM_BUILD` isolation — the discipline used all session to
+   run agents concurrently — does **not** isolate them. Last writer wins, silently. Harmless
+   in CI (single job, no matrix) but a real hazard locally.
+3. **`make clean` does not remove `coverage_*.yml`.** Stale coverage files survived a clean and
+   were nearly read as a fresh run's output; only their timestamps gave it away.
+4. **A coverage bin was mislabeled, not missing.** `test_bus.py`'s `sample_cycle` hardcoded
+   `"write"` inside a loop over `write in (False, True)`, so every unselected *read* cycle was
+   recorded as a write. The 88.89% figure was wrong in **both** directions: one bin falsely
+   empty, another credited with hits it never earned. A coverage number that misreports which
+   stimulus ran survives review in a way a low number does not.
