@@ -8,7 +8,13 @@ project:
   clock_hz:     24576000                   # 24.576 MHz - chosen so 24.576MHz/512 = 48kHz exactly; see docs/design/sound-chip.md #4
 
   # How many tiles your design occupies? A single tile is about 167x108 uM.
-  tiles: "1x1"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
+  # 1x2, not 1x1: a 1x1 harden fails in detailed placement (DPL-0036). The logic
+  # itself fits -- 21,216 um^2 of instances in a 31,318 um^2 die -- but the post-CTS
+  # resizer inserts ~320 hold buffers (+57% instances) to close hold timing, and
+  # ~33.3k um^2 does not fit. Two tiles, rather than tuning PL_TARGET_DENSITY_PCT or
+  # the resizer's hold margin/buffer cap: those affect routability and congestion in
+  # a shared shuttle flow, so they are not ours to trade against a neighbour's design.
+  tiles: "1x2"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
 
   # Your top module name must start with "tt_um_". Make it unique by including your github username:
   top_module:  "tt_um_benpayne_sound_chip"
